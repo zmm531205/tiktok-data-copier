@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>TikTok Data Copier</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+  <style>
+    body {
+      width: 340px;
+      margin: 0;
+      padding: 20px 40px;
+      background: #EFEEF5;
+      border-radius: 16px;
+      font-family: 'Roboto', sans-serif;
+      color: #000;
+    }
+    h1.big-title {
+      font-size: 20px;
+      text-align: center;
+      margin: 0 0 8px;
+    }
+    h2 { font-size: 16px; margin: 0 0 4px; }
+    body, td, th, .setting-item span, .setting-item input[type="number"],
+    #module1 .author, #module1 .version, .small-text { font-size: 12px; }
+    .small-text, .footnote, #module4 .contact { font-size: 10px; color: #333; }
+    .module { padding: 8px 0; }
+    .divider { height: 1px; background: #ccc; margin: 8px 0; }
+    table { width: 100%; border-collapse: collapse; margin-top: 4px; }
+    th { border: 1px solid #000; padding: 4px; text-align: left; padding-left: 16px; }
+    #module2 td { border: 1px solid #000; padding: 4px; text-align: center; }
+    .setting-item {
+      display: flex; justify-content: space-between; align-items: center;
+      margin: 6px 0;
+    }
+    .switch { position: relative; display: inline-block; width: 36px; height: 18px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute; cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: #ccc; transition: .3s; border-radius: 18px;
+    }
+    .slider:before {
+      content: ""; position: absolute;
+      height: 14px; width: 14px;
+      left: 2px; bottom: 2px;
+      transition: .3s; border-radius: 50%; background: #fff;
+    }
+    input:checked + .slider { background: #2196F3; }
+    input:checked + .slider:before { transform: translateX(18px); }
+    input[type="number"] { width: 60px; padding: 2px; }
+  </style>
+</head>
+<body>
+  <h1 class="big-title">Tiktok 你跑不掉</h1>
+
+  <!-- 功能說明 -->
+  <div class="module" id="module1">
+    <h2>社群數據抓手</h2>
+    <div class="author">Author：Jamie</div>
+    <div class="version">Version：1.3</div>
+    <div class="small-text">
+      更新內容：<br>
+      • 2025-07-06: 新增 Last Videos 開關<br>
+      • 2025-07-06: 新增 Views/Likes/Comments/Saves/Shares 功能<br>
+      • 2025-07-06: 擴增支持 Video Page
+    </div>
+  </div>
+  <div class="divider"></div>
+
+  <!-- View Stats Data -->
+  <div class="module" id="module2">
+    <h2>View Stats Data</h2>
+    <table>
+      <tr><th>Pin Video Avg：</th><td id="stat-pinnedAvg">-</td></tr>
+      <tr><th>Last Videos Avg：</th><td id="stat-lastAvg">-</td></tr>
+      <tr><th>觀看滲透率：</th><td id="stat-penetration">-</td></tr>
+    </table>
+    <div class="footnote"><br>
+      **Pin Video Avg: 釘選視頻的平均觀看<br>
+      **Last Videos Avg: 最近幾則視頻（去除釘選）的平均觀看<br>
+      **滲透率: 最近幾則的平均觀看 / 追蹤人數
+    </div>
+  </div>
+  <div class="divider"></div>
+
+  <!-- Setting -->
+  <div class="module" id="module3">
+    <h2>Setting</h2>
+    <h3 style="font-size:14px; margin:8px 0 4px;">- Profile Page</h3>
+    <div class="setting-item"><span>User Name</span><label class="switch"><input type="checkbox" id="toggle-username"><span class="slider"></span></label></div>
+    <div class="setting-item"><span>Followers</span><label class="switch"><input type="checkbox" id="toggle-followers"><span class="slider"></span></label></div>
+    <div class="setting-item"><span>Bio</span><label class="switch"><input type="checkbox" id="toggle-bio"><span class="slider"></span></label></div>
+    <div class="setting-item"><span>Email</span><label class="switch"><input type="checkbox" id="toggle-email"><span class="slider"></span></label></div>
+    <div class="setting-item"><span>Pinned Avg</span><label class="switch"><input type="checkbox" id="toggle-pinned"><span class="slider"></span></label></div>
+    <div class="setting-item"><span>Last Videos</span><label class="switch"><input type="checkbox" id="toggle-lastVideos"><span class="slider"></span></label></div>
+    <div class="setting-item"><span>Last N Videos</span><input type="number" id="input-lastN" min="1" placeholder="5"></div>
+    <div class="setting-item"><span>滲透率</span><label class="switch"><input type="checkbox" id="toggle-penetration"><span class="slider"></span></label></div>
+    <div style="height:12px;"></div>
+    <h3 style="font-size:14px; margin:8px 0 4px;">- Video Page</h3>
+    <div class="setting-item"><span>Views</span><label class="switch"><input type="checkbox" id="toggle-views"><span class="slider"></span></label></div>
+    <div class="setting-item"><span>Likes</span><label class="switch"><input type="checkbox" id="toggle-likes"><span class="slider"></span></label></div>
+    <div class="setting-item"><span>Comments</span><label class="switch"><input type="checkbox" id="toggle-comments"><span class="slider"></span></label></div>
+    <div class="setting-item"><span>Saves</span><label class="switch"><input type="checkbox" id="toggle-saves"><span class="slider"></span></label></div>
+    <div class="setting-item"><span>Shares</span><label class="switch"><input type="checkbox" id="toggle-shares"><span class="slider"></span></label></div>
+  </div>
+  <div class="divider"></div>
+
+  <div class="module" id="module4">
+    <div class="contact small-text">需求更新与维护请联系：LINE@jamie</div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
