@@ -33,7 +33,10 @@
     'ig-lastN': 5,
     
     // 当前平台
-    currentPlatform: 'tiktok'
+    currentPlatform: 'tiktok',
+    
+    // 初始化标记
+    initialized: false
   };
 
   // 初始化UI
@@ -68,8 +71,24 @@
     document.getElementById('ig-toggleShares').checked = prefs['ig-toggleShares'];
     document.getElementById('ig-lastN').value = prefs['ig-lastN'];
 
-    // 设置当前平台
-    setCurrentPlatform(prefs.currentPlatform || 'tiktok');
+    // 根据当前网址自动设置平台
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      const tab = tabs[0];
+      if (tab) {
+        let platform = 'tiktok'; // 默认
+        if (tab.url.includes('instagram.com')) {
+          platform = 'instagram';
+        } else if (tab.url.includes('tiktok.com')) {
+          platform = 'tiktok';
+        }
+        
+        // 设置当前平台
+        setCurrentPlatform(platform);
+      } else {
+        // 如果没有获取到tab，使用保存的平台设置
+        setCurrentPlatform(prefs.currentPlatform || 'tiktok');
+      }
+    });
   }
 
   // 设置当前平台
@@ -124,7 +143,9 @@
       'ig-lastN': parseInt(document.getElementById('ig-lastN').value) || 5
     };
 
-    chrome.storage.local.set(settings);
+    chrome.storage.local.set(settings, () => {
+      // 确保设置已保存
+    });
   }
 
   // 刷新数据
@@ -134,7 +155,7 @@
     const dataContent = document.getElementById('dataContent');
     const refreshBtn = document.getElementById('refreshBtn');
 
-    statusEl.textContent = '正在获取数据...';
+    statusEl.textContent = '正在獲取數據...';
     refreshBtn.disabled = true;
     dataDisplay.style.display = 'none';
 
@@ -149,7 +170,7 @@
       chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
         const tab = tabs[0];
         if (!tab) {
-          statusEl.textContent = '无法获取当前标签页';
+          statusEl.textContent = '無法獲取當前標籤頁';
           refreshBtn.disabled = false;
           return;
         }
@@ -159,59 +180,61 @@
         const isInstagram = tab.url.includes('instagram.com');
 
         if (!isTikTok && !isInstagram) {
-          statusEl.textContent = '请在TikTok或Instagram页面上使用此扩展';
+          statusEl.textContent = '請在TikTok或Instagram頁面上使用此擴展';
           refreshBtn.disabled = false;
           return;
         }
 
         if ((platform === 'tiktok' && !isTikTok) || (platform === 'instagram' && !isInstagram)) {
-          statusEl.textContent = `请在${platform === 'tiktok' ? 'TikTok' : 'Instagram'}页面上使用此扩展`;
+          statusEl.textContent = `請在${platform === 'tiktok' ? 'TikTok' : 'Instagram'}頁面上使用此擴展`;
           refreshBtn.disabled = false;
           return;
         }
 
         chrome.tabs.sendMessage(tab.id, { action: 'getData', lastN }, (response) => {
           if (chrome.runtime.lastError) {
-            statusEl.textContent = '无法与页面通信，请刷新页面后重试';
+            statusEl.textContent = '無法與頁面通信，請刷新頁面後重試';
             refreshBtn.disabled = false;
             return;
           }
 
           if (response && response.error) {
-            statusEl.textContent = `错误: ${response.error}`;
+            statusEl.textContent = `錯誤: ${response.error}`;
             refreshBtn.disabled = false;
             return;
           }
 
           if (response) {
             // 显示数据
-            let displayText = '';
             const isVideo = response.hasOwnProperty('play');
+            const tableBody = document.getElementById('dataTableBody');
+            tableBody.innerHTML = ''; // 清空表格
 
             if (isVideo) {
-              displayText = `URL: ${response.url}\n`;
-              displayText += `用户名: ${response.userId}\n`;
-              displayText += `观看数: ${response.play.toLocaleString()}\n`;
-              displayText += `点赞数: ${response.likes.toLocaleString()}\n`;
-              displayText += `评论数: ${response.comments.toLocaleString()}\n`;
-              displayText += `收藏数: ${response.saves.toLocaleString()}\n`;
-              displayText += `分享数: ${response.shares.toLocaleString()}`;
+              // Video页面不显示表格数据
+              dataDisplay.style.display = 'none';
             } else {
-              displayText = `URL: ${response.url}\n`;
-              displayText += `用户名: ${response.userId}\n`;
-              displayText += `粉丝数: ${response.followers}\n`;
-              displayText += `个人简介: ${response.bio}\n`;
-              displayText += `邮箱: ${response.email || '无'}\n`;
-              displayText += `置顶平均观看: ${response.pinnedAvg || '-'}\n`;
-              displayText += `最近平均观看: ${response.lastAvg || '-'}\n`;
-              displayText += `渗透率: ${response.penetration}`;
+              // Profile页面始终显示三个关键指标（不受复选框状态影响）
+              const profileData = [
+                ['置頂平均觀看', response.pinnedAvg || '-'],
+                ['最近平均觀看', response.lastAvg || '-'],
+                ['滲透率', response.penetration]
+              ];
+              
+              profileData.forEach(([label, value]) => {
+                const row = tableBody.insertRow();
+                const cell1 = row.insertCell(0);
+                const cell2 = row.insertCell(1);
+                cell1.textContent = label;
+                cell2.textContent = value;
+              });
+              
+              dataDisplay.style.display = 'block';
             }
 
-            dataContent.textContent = displayText;
-            dataDisplay.style.display = 'block';
-            statusEl.textContent = '数据获取成功';
+            statusEl.textContent = '數據獲取成功';
           } else {
-            statusEl.textContent = '未收到数据响应';
+            statusEl.textContent = '未收到數據響應';
           }
 
           refreshBtn.disabled = false;
@@ -222,8 +245,24 @@
 
   // 事件监听器
   document.addEventListener('DOMContentLoaded', () => {
-    // 初始化设置
-    chrome.storage.local.get(defaults, initUI);
+    // 检查是否已初始化
+    chrome.storage.local.get(['initialized'], (result) => {
+      if (!result.initialized) {
+        // 首次安装，写入默认设置
+        chrome.storage.local.set(defaults, () => {
+          chrome.storage.local.set({ initialized: true }, () => {
+            initUI(defaults);
+          });
+        });
+      } else {
+        // 已初始化，读取现有设置
+        chrome.storage.local.get(defaults, (prefs) => {
+          // 确保所有设置都存在，如果不存在则使用默认值
+          const settings = { ...defaults, ...prefs };
+          initUI(settings);
+        });
+      }
+    });
 
     // 平台切换
     document.querySelectorAll('.platform-tab').forEach(tab => {
@@ -241,5 +280,10 @@
 
     // 刷新按钮
     document.getElementById('refreshBtn').addEventListener('click', refresh);
+    
+    // 自动刷新数据
+    setTimeout(() => {
+      refresh();
+    }, 500);
   });
 })();

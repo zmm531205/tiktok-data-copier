@@ -32,7 +32,7 @@
       if (currentUrl.includes('/reel/')) {
         return 'reel';
       } else if (currentUrl.includes('/p/')) {
-        return 'post';
+        return 'video'; // 將帖子頁面視為video頁面
       } else if (currentUrl.match(/instagram\.com\/[^\/]+\/?$/) || 
                  currentUrl.match(/instagram\.com\/[^\/]+\/reels\/?$/) || 
                  currentUrl.match(/instagram\.com\/[^\/]+\/tagged\/?$/)) {
@@ -48,7 +48,7 @@
       if (match && match[1] !== 'reel' && match[1] !== 'p') {
         return match[1];
       }
-      throw new Error("无法从URL中提取用户名");
+      throw new Error("無法從URL中提取用戶名");
     }
 
     // 从URL中提取Reel代码
@@ -57,7 +57,16 @@
       if (match) {
         return match[1];
       }
-      throw new Error("无法从URL中提取Reel代码");
+      throw new Error("無法從URL中提取Reel代碼");
+    }
+
+    // 从URL中提取Post代码
+    extractPostCode(url) {
+      const match = url.match(/\/p\/([^\/\?]+)/);
+      if (match) {
+        return match[1];
+      }
+      throw new Error("無法從URL中提取Post代碼");
     }
 
     // 获取用户基本信息
@@ -81,7 +90,7 @@
         const data = await response.json();
         return data;
       } catch (error) {
-        console.error("获取用户资料失败:", error);
+        // console.error("獲取用戶資料失敗:", error);
         throw error;
       }
     }
@@ -91,7 +100,7 @@
       try {
         const csrfToken = this.getCsrfToken();
         if (!csrfToken) {
-          throw new Error("CSRF token not found");
+          throw new Error("CSRF token 未找到");
         }
 
         const params = {
@@ -123,7 +132,7 @@
         const data = await response.json();
         return data;
       } catch (error) {
-        console.error("获取用户Reels失败:", error);
+        // console.error("獲取用戶Reels失敗:", error);
         throw error;
       }
     }
@@ -168,11 +177,11 @@
             userProfile: profileData.data.user
           };
         } else {
-          throw new Error(`在用户 ${username} 的Reels中未找到代码为 ${reelCode} 的Reel`);
+          throw new Error(`在用戶 ${username} 的Reels中未找到代碼為 ${reelCode} 的Reel`);
         }
         
       } catch (error) {
-        console.error("获取Reel数据失败:", error);
+        // console.error("獲取Reel數據失敗:", error);
         throw error;
       }
     }
@@ -181,7 +190,7 @@
     analyzeReelData(reelData) {
       const media = reelData.items?.[0];
       if (!media) {
-        throw new Error("未找到媒体数据");
+        throw new Error("未找到媒體數據");
       }
 
       // 检查是否隐藏了点赞和观看数
@@ -241,7 +250,7 @@
         };
         
       } catch (error) {
-        console.error("分析用户数据失败:", error);
+        // console.error("分析用戶數據失敗:", error);
         throw error;
       }
     }
@@ -250,8 +259,8 @@
     analyzeUserDataHelper(reelsData) {
       const reels = reelsData?.items || [];
       
-      // 分析最近N篇Reels的互动数据
-      const recentReels = reels.slice(0, 5); // 使用插件原有的逻辑
+      // 分析最近5篇Reels的互动数据
+      const recentReels = reels.slice(0, 5);
       
       const reelStats = recentReels.map(reel => {
         const media = reel.media || reel;
@@ -296,7 +305,7 @@
         // Reels统计
         totalReelsFound: reels.length,
         
-        // 最近N篇Reels平均数据
+        // 最近5篇Reels平均数据
         recentReels: {
           count: reelStats.length,
           averageLikes: typeof avgReelLikes === 'number' ? Math.round(avgReelLikes) : "部分隐藏",
@@ -340,25 +349,39 @@
       return '';
     }
 
-    // 从页面元素中查找pinned video
-    findPinnedVideos() {
-      const pinnedVideos = [];
+    // 从页面元素中查找pinned video的reels ID
+    findPinnedReelsIds() {
+      const pinnedReelsIds = [];
       
-      // 查找所有视频卡片容器
-      const videoCards = document.querySelectorAll('a[href*="/p/"]');
+      // 直接查找pinned icon
+      const pinnedIcons = document.querySelectorAll('svg[aria-label="Pinned post icon"], svg[title="Pinned post icon"], svg[aria-label*="Pinned"], svg[title*="Pinned"]');
       
-      videoCards.forEach(card => {
-        // 检查是否有pin tag
-        const pinTag = card.querySelector('svg[aria-label="Pinned post icon"]');
-        if (pinTag) {
-          const href = card.getAttribute('href');
-          if (href) {
-            pinnedVideos.push(href);
+      pinnedIcons.forEach((icon, index) => {
+        // 向上查找包含href的a標籤
+        let parent = icon.parentElement;
+        let foundLink = null;
+        let depth = 0;
+        
+        while (parent && depth < 15) {
+          if (parent.tagName === 'A' && parent.href && (parent.href.includes('/p/') || parent.href.includes('/reel/'))) {
+            foundLink = parent;
+            break;
+          }
+          parent = parent.parentElement;
+          depth++;
+        }
+        
+        if (foundLink) {
+          const href = foundLink.getAttribute('href');
+          // 匹配 /p/{id}/ 或 /reel/{id}/ 格式
+          const match = href.match(/\/(?:p|reel)\/([^\/\?]+)/);
+          if (match) {
+            pinnedReelsIds.push(match[1]);
           }
         }
       });
       
-      return pinnedVideos;
+      return pinnedReelsIds;
     }
 
     // 收集Profile页面数据
@@ -374,27 +397,62 @@
         // 获取用户Reels
         const reelsData = await this.getUserReels(userData.id);
         
-        // 分析Reels数据
-        const analysis = this.analyzeUserDataHelper(reelsData);
+        // 从页面元素中查找pinned reels IDs
+        const pinnedReelsIds = this.findPinnedReelsIds();
         
-        // 提取email
-        const email = this.extractEmailFromProfile(userData);
-        
-        // 查找pinned videos
-        const pinnedVideoUrls = this.findPinnedVideos();
-        
-        // 计算pinned video的平均观看数
+        // 在API數據中查找pinned reels的觀看數
         let pinnedAvg = null;
-        if (pinnedVideoUrls.length > 0) {
-          // 这里需要根据pinned video的URL获取具体数据
-          // 由于API限制，暂时使用页面元素数据
-          pinnedAvg = 0; // 需要进一步实现
+        if (pinnedReelsIds.length > 0) {
+          const pinnedReels = [];
+          const reels = reelsData?.items || [];
+          
+          // 在API數據中匹配pinned reels
+          pinnedReelsIds.forEach(pinnedId => {
+            const foundReel = reels.find(reel => {
+              const media = reel.media || reel;
+              const reelCode = media.code || reel.code;
+              return reelCode === pinnedId;
+            });
+            
+            if (foundReel) {
+              const media = foundReel.media || foundReel;
+              const views = media.play_count || media.view_count || 0;
+              pinnedReels.push(views);
+            }
+          });
+          
+          // 計算pinned reels的平均觀看數
+          if (pinnedReels.length > 0) {
+            pinnedAvg = Math.round(pinnedReels.reduce((sum, views) => sum + views, 0) / pinnedReels.length);
+          }
         }
         
+        // 分析Reels数据
+        const reels = reelsData?.items || [];
+        const recentReels = reels.slice(0, lastN);
+        
+        const reelStats = recentReels.map(reel => {
+          const media = reel.media || reel;
+          const countsDisabled = media.like_and_view_counts_disabled || false;
+          
+          return {
+            id: reel.id,
+            code: reel.code,
+            likes: countsDisabled ? "隐藏" : (media.like_count || 0),
+            comments: media.comment_count || 0,
+            views: media.play_count || 0,
+            timestamp: reel.taken_at_timestamp,
+            caption: reel.caption?.text || "",
+            mediaType: media.media_type,
+            isVideo: media.media_type === 2,
+            isReel: true,
+            countsDisabled: countsDisabled
+          };
+        });
+        
         // 计算最近N个视频的平均观看数
-        const recentReels = analysis.recentReels.reels.slice(0, lastN);
-        const lastAvg = recentReels.length > 0 ? 
-          Math.round(recentReels.reduce((sum, reel) => sum + reel.views, 0) / recentReels.length) : null;
+        const lastAvg = reelStats.length > 0 ? 
+          Math.round(reelStats.reduce((sum, reel) => sum + reel.views, 0) / reelStats.length) : null;
         
         // 计算渗透率
         const folNum = userData.edge_followed_by?.count || 0;
@@ -402,19 +460,22 @@
           ? (lastAvg/folNum*100).toFixed(1) + '%'
           : '-';
 
+        // 提取email
+        const email = this.extractEmailFromProfile(userData);
+
         return {
           url,
           userId: username,
-          followers: (userData.edge_followed_by?.count || 0).toString(),
+          followers: (userData.edge_followed_by?.count || 0).toLocaleString(),
           bio: userData.biography || '',
           email,
-          pinnedAvg,
-          lastAvg,
+          pinnedAvg: pinnedAvg ? pinnedAvg.toLocaleString() : null,
+          lastAvg: lastAvg ? lastAvg.toLocaleString() : null,
           penetration
         };
         
       } catch (error) {
-        console.error("收集Profile数据失败:", error);
+        // console.error("收集Profile數據失敗:", error);
         return {
           url,
           userId: username,
@@ -449,7 +510,105 @@
         };
         
       } catch (error) {
-        console.error("收集Reel数据失败:", error);
+        // console.error("收集Reel數據失敗:", error);
+        return {
+          url,
+          userId: '',
+          play: 0,
+          likes: 0,
+          comments: 0,
+          saves: 0,
+          shares: 0
+        };
+      }
+    }
+
+    // 收集Post页面数据
+    async collectPostData() {
+      const url = location.href;
+      const postCode = this.extractPostCode(url);
+      
+      try {
+        // 从页面元素中查找用户名
+        let username = null;
+        const userElements = document.querySelectorAll('a[href*="/"]');
+        for (const element of userElements) {
+          const href = element.getAttribute('href');
+          if (href && href.startsWith('/') && !href.includes('/reel/') && !href.includes('/p/')) {
+            const potentialUser = href.substring(1).split('/')[0];
+            if (potentialUser && potentialUser.length > 0 && !potentialUser.includes('?')) {
+              username = potentialUser;
+              break;
+            }
+          }
+        }
+        
+        if (!username) {
+          username = "instagram";
+        }
+        
+        // 从页面元素中获取互动数据
+        let likes = 0;
+        let comments = 0;
+        let saves = 0;
+        let shares = 0;
+        
+        // 尝试获取点赞数
+        const likeElements = document.querySelectorAll('[data-e2e="like-count"], [data-e2e="browse-like-count"], .like-count, .likes-count');
+        for (const element of likeElements) {
+          const text = element.textContent.trim();
+          const match = text.match(/(\d+(?:,\d+)*)/);
+          if (match) {
+            likes = parseInt(match[1].replace(/,/g, ''));
+            break;
+          }
+        }
+        
+        // 尝试获取评论数
+        const commentElements = document.querySelectorAll('[data-e2e="comment-count"], .comment-count, .comments-count');
+        for (const element of commentElements) {
+          const text = element.textContent.trim();
+          const match = text.match(/(\d+(?:,\d+)*)/);
+          if (match) {
+            comments = parseInt(match[1].replace(/,/g, ''));
+            break;
+          }
+        }
+        
+        // 尝试获取收藏数
+        const saveElements = document.querySelectorAll('[data-e2e="save-count"], .save-count, .saves-count');
+        for (const element of saveElements) {
+          const text = element.textContent.trim();
+          const match = text.match(/(\d+(?:,\d+)*)/);
+          if (match) {
+            saves = parseInt(match[1].replace(/,/g, ''));
+            break;
+          }
+        }
+        
+        // 尝试获取分享数
+        const shareElements = document.querySelectorAll('[data-e2e="share-count"], .share-count, .shares-count');
+        for (const element of shareElements) {
+          const text = element.textContent.trim();
+          const match = text.match(/(\d+(?:,\d+)*)/);
+          if (match) {
+            shares = parseInt(match[1].replace(/,/g, ''));
+            break;
+          }
+        }
+        
+        return {
+          url,
+          userId: username,
+          play: 0, // Post没有观看数
+          likes: likes,
+          comments: comments,
+          saves: saves,
+          shares: shares
+        };
+        
+      } catch (error) {
+        // console.error("收集Post數據失敗:", error);
         return {
           url,
           userId: '',
@@ -463,15 +622,17 @@
     }
 
     // 根据路径决定模式
-    collectData(lastN) {
+    async collectData(lastN) {
       const pageType = this.detectPageType();
       
       if (pageType === 'reel') {
         return this.collectReelData();
+      } else if (pageType === 'video') {
+        return this.collectPostData();
       } else if (pageType === 'profile') {
         return this.collectProfileData(lastN);
       } else {
-        throw new Error("不支持的页面类型");
+        throw new Error("不支持的頁面類型");
       }
     }
   }
@@ -521,44 +682,49 @@
     btn.addEventListener('click', () => {
       btn.style.opacity = '0.6';
       chrome.storage.local.get([
-        'toggleUsername','toggleFollowers','toggleBio','toggleEmail',
-        'togglePinned','toggleLastVideos','togglePenetration',
-        'toggleViews','toggleLikes','toggleComments','toggleSaves','toggleShares',
-        'lastN'
-      ], prefs => {
-        const data = instagramCopier.collectData(prefs.lastN || 5);
-        const isVideo = data.hasOwnProperty('play');
-        const row = [];
+        'ig-toggleUsername','ig-toggleFollowers','ig-toggleBio','ig-toggleEmail',
+        'ig-togglePinned','ig-toggleLastVideos','ig-togglePenetration',
+        'ig-toggleViews','ig-toggleLikes','ig-toggleComments','ig-toggleSaves','ig-toggleShares',
+        'ig-lastN'
+      ], async prefs => {
+        try {
+          const data = await instagramCopier.collectData(prefs['ig-lastN'] || 5);
+          const isVideo = data.hasOwnProperty('play');
+          const row = [];
 
-        // URL 永远第一
-        row.push(data.url);
+          // URL 永远第一
+          row.push(data.url);
 
-        // Profile 字段
-        if (!isVideo) {
-          if (prefs.toggleUsername)   row.push(data.userId);
-          if (prefs.toggleFollowers)  row.push(data.followers);
-          if (prefs.toggleBio)        row.push(data.bio);
-          if (prefs.toggleEmail)      row.push(data.email);
-          if (prefs.togglePinned)     row.push(data.pinnedAvg ?? '-');
-          if (prefs.toggleLastVideos) row.push(data.lastAvg   ?? '-');
-          if (prefs.togglePenetration)row.push(data.penetration);
+          // Profile 字段
+          if (!isVideo) {
+            if (prefs['ig-toggleUsername'])   row.push(data.userId);
+            if (prefs['ig-toggleFollowers'])  row.push(data.followers);
+            if (prefs['ig-toggleBio'])        row.push(data.bio);
+            if (prefs['ig-toggleEmail'])      row.push(data.email);
+            if (prefs['ig-togglePinned'])     row.push(data.pinnedAvg ?? '-');
+            if (prefs['ig-toggleLastVideos']) row.push(data.lastAvg   ?? '-');
+            if (prefs['ig-togglePenetration'])row.push(data.penetration);
+          }
+
+          // Video 字段
+          if (isVideo) {
+            if (prefs['ig-toggleUsername']) row.push(data.userId);
+            if (prefs['ig-toggleViews'])    row.push(data.play.toLocaleString());
+            if (prefs['ig-toggleLikes'])    row.push(data.likes.toLocaleString());
+            if (prefs['ig-toggleComments']) row.push(data.comments.toLocaleString());
+            if (prefs['ig-toggleSaves'])    row.push(data.saves.toLocaleString());
+            if (prefs['ig-toggleShares'])   row.push(data.shares.toLocaleString());
+          }
+
+          const text = row.filter(v => v != null).join('\t');
+          await navigator.clipboard.writeText(text);
+          showToast('Copy Succeed!');
+        } catch (error) {
+          // console.error('複製失敗:', error);
+          showToast('Copy Failed');
+        } finally {
+          setTimeout(() => btn.style.opacity = '1', 2000);
         }
-
-        // Video 字段
-        if (isVideo) {
-          if (prefs.toggleUsername) row.push(data.userId);
-          if (prefs.toggleViews)    row.push(data.play.toLocaleString());
-          if (prefs.toggleLikes)    row.push(data.likes.toLocaleString());
-          if (prefs.toggleComments) row.push(data.comments.toLocaleString());
-          if (prefs.toggleSaves)    row.push(data.saves.toLocaleString());
-          if (prefs.toggleShares)   row.push(data.shares.toLocaleString());
-        }
-
-        const text = row.filter(v => v != null).join('\t');
-        navigator.clipboard.writeText(text)
-          .then(() => showToast('Copy Succeed!'))
-          .catch(() => showToast('Copy Failed'))
-          .finally(() => setTimeout(() => btn.style.opacity = '1', 2000));
       });
     });
   }
@@ -589,8 +755,7 @@
   
   function waitForPageReady() {
     // 检查页面是否已经准备好
-    const hasContent = document.querySelector('[data-e2e="video-views"], [data-e2e="followers-count"], .tiktok-web-player') ||
-                      document.querySelector('a[href*="/p/"], a[href*="/reel/"]');
+    const hasContent = document.querySelector('a[href*="/p/"], a[href*="/reel/"]');
     const hasReactReady = !document.querySelector('.loading') && document.body.children.length > 10;
     
     if (hasContent || hasReactReady) {
@@ -615,12 +780,14 @@
   // 监听 popup.js 的 getData
   chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     if (msg.action === 'getData') {
-      try {
-        const data = instagramCopier.collectData(msg.lastN);
-        sendResponse(data);
-      } catch (error) {
-        sendResponse({ error: error.message });
-      }
+      (async () => {
+        try {
+          const data = await instagramCopier.collectData(msg.lastN);
+          sendResponse(data);
+        } catch (error) {
+          sendResponse({ error: error.message });
+        }
+      })();
       return true;
     }
   });

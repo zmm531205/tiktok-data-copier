@@ -32,6 +32,50 @@
       margin: 0;
     }
     
+    .info-section {
+      margin-bottom: 16px;
+      padding: 12px;
+      background: #f6f8fa;
+      border-radius: 6px;
+      border: 1px solid #d0d7de;
+    }
+    
+    .info-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #24292f;
+      margin-bottom: 8px;
+    }
+    
+    .info-content {
+      font-size: 12px;
+      color: #656d76;
+      line-height: 1.5;
+    }
+    
+    .author {
+      font-size: 11px;
+      color: #656d76;
+      margin-bottom: 4px;
+    }
+    
+    .version {
+      font-size: 11px;
+      color: #656d76;
+      margin-bottom: 8px;
+    }
+    
+    .update-notes {
+      font-size: 11px;
+      color: #656d76;
+      margin-bottom: 8px;
+    }
+    
+    .data-explanation {
+      font-size: 11px;
+      color: #656d76;
+    }
+    
     .platform-selector {
       margin-bottom: 16px;
     }
@@ -139,9 +183,45 @@
     .data-content {
       font-size: 12px;
       color: #656d76;
-      white-space: pre-wrap;
       max-height: 200px;
       overflow-y: auto;
+    }
+    
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      table-layout: fixed;
+    }
+    
+    .data-table th,
+    .data-table td {
+      padding: 6px 8px;
+      border-bottom: 1px solid #e1e5e9;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+    
+    .data-table th {
+      background-color: #f6f8fa;
+      font-weight: 600;
+      color: #24292f;
+      text-align: left;
+      width: 50%;
+    }
+    
+    .data-table td:first-child {
+      text-align: left;
+      width: 50%;
+    }
+    
+    .data-table td:last-child {
+      text-align: right;
+      width: 50%;
+    }
+    
+    .data-table tr:hover {
+      background-color: #f6f8fa;
     }
     
     .refresh-btn {
@@ -177,7 +257,36 @@
 <body>
   <div class="header">
     <img src="logo.png" class="logo" alt="Logo">
-    <h1 class="title">Social Media Data Copier</h1>
+    <h1 class="title">社群數據抓手</h1>
+  </div>
+  
+  <div class="info-section">
+    <div class="info-title">基本資訊</div>
+    <div class="author">作者：Jamie</div>
+    <div class="version">版本：1.4</div>
+    <div class="update-notes">
+      更新內容：<br>
+      • 2025-07-22: 新增 Instagram 支援<br>
+      • 2025-07-22: 新增 Profile 頁面數據收集<br>
+      • 2025-07-22: 新增 Reel 頁面數據收集<br>
+      • 2025-07-22: 新增置頂視頻檢測功能<br>
+      • 2025-07-22: 新增平台切換介面
+    </div>
+  </div>
+  
+  <div class="info-section">
+    <div class="info-title">數據說明</div>
+    <div class="data-display" id="dataDisplay" style="display: none;">
+      <table class="data-table" id="dataTable">
+        <tbody id="dataTableBody">
+        </tbody>
+      </table>
+      <div class="data-explanation" style="margin-top: 12px;">
+        <strong>置頂平均觀看:</strong> 釘選視頻的平均觀看<br>
+        <strong>最近平均觀看:</strong> 最近幾則視頻（去除釘選）的平均觀看<br>
+        <strong>滲透率:</strong> 最近幾則的平均觀看 / 追蹤人數
+      </div>
+    </div>
   </div>
   
   <div class="platform-selector">
@@ -190,61 +299,61 @@
   <!-- TikTok Content -->
   <div class="platform-content active" id="tiktok-content">
     <div class="section">
-      <div class="section-title">Profile页面数据</div>
+      <div class="section-title">Profile頁面數據</div>
       <div class="checkbox-group">
         <label class="checkbox-item">
           <input type="checkbox" id="toggleUsername" checked>
-          用户名
+          用戶名
         </label>
         <label class="checkbox-item">
           <input type="checkbox" id="toggleFollowers" checked>
-          粉丝数
+          粉絲數
         </label>
         <label class="checkbox-item">
           <input type="checkbox" id="toggleBio" checked>
-          个人简介
+          個人簡介
         </label>
         <label class="checkbox-item">
           <input type="checkbox" id="toggleEmail" checked>
-          邮箱
+          郵箱
         </label>
         <label class="checkbox-item">
           <input type="checkbox" id="togglePinned" checked>
-          置顶平均观看
+          置頂平均觀看
         </label>
         <label class="checkbox-item">
           <input type="checkbox" id="toggleLastVideos" checked>
-          最近平均观看
+          最近平均觀看
         </label>
         <label class="checkbox-item">
           <input type="checkbox" id="togglePenetration" checked>
-          渗透率
+          滲透率
         </label>
       </div>
     </div>
     
     <div class="section">
-      <div class="section-title">Video页面数据</div>
+      <div class="section-title">Video頁面數據</div>
       <div class="checkbox-group">
         <label class="checkbox-item">
           <input type="checkbox" id="toggleViews" checked>
-          观看数
+          觀看數
         </label>
         <label class="checkbox-item">
           <input type="checkbox" id="toggleLikes" checked>
-          点赞数
+          點讚數
         </label>
         <label class="checkbox-item">
           <input type="checkbox" id="toggleComments" checked>
-          评论数
+          評論數
         </label>
         <label class="checkbox-item">
           <input type="checkbox" id="toggleSaves" checked>
-          收藏数
+          收藏數
         </label>
         <label class="checkbox-item">
           <input type="checkbox" id="toggleShares" checked>
-          分享数
+          分享數
         </label>
       </div>
     </div>
@@ -253,7 +362,7 @@
       <div class="section-title">Last N Videos</div>
       <div class="number-input">
         <input type="number" id="lastN" min="1" max="20" value="5">
-        <label>个视频</label>
+        <label>個視頻</label>
       </div>
     </div>
   </div>
@@ -261,61 +370,61 @@
   <!-- Instagram Content -->
   <div class="platform-content" id="instagram-content">
     <div class="section">
-      <div class="section-title">Profile页面数据</div>
+      <div class="section-title">Profile頁面數據</div>
       <div class="checkbox-group">
         <label class="checkbox-item">
           <input type="checkbox" id="ig-toggleUsername" checked>
-          用户名
+          用戶名
         </label>
         <label class="checkbox-item">
           <input type="checkbox" id="ig-toggleFollowers" checked>
-          粉丝数
+          粉絲數
         </label>
         <label class="checkbox-item">
           <input type="checkbox" id="ig-toggleBio" checked>
-          个人简介
+          個人簡介
         </label>
         <label class="checkbox-item">
           <input type="checkbox" id="ig-toggleEmail" checked>
-          邮箱
+          郵箱
         </label>
         <label class="checkbox-item">
           <input type="checkbox" id="ig-togglePinned" checked>
-          置顶平均观看
+          置頂平均觀看
         </label>
         <label class="checkbox-item">
           <input type="checkbox" id="ig-toggleLastVideos" checked>
-          最近平均观看
+          最近平均觀看
         </label>
         <label class="checkbox-item">
           <input type="checkbox" id="ig-togglePenetration" checked>
-          渗透率
+          滲透率
         </label>
       </div>
     </div>
     
     <div class="section">
-      <div class="section-title">Reel页面数据</div>
+      <div class="section-title">Reel頁面數據</div>
       <div class="checkbox-group">
         <label class="checkbox-item">
           <input type="checkbox" id="ig-toggleViews" checked>
-          观看数
+          觀看數
         </label>
         <label class="checkbox-item">
           <input type="checkbox" id="ig-toggleLikes" checked>
-          点赞数
+          點讚數
         </label>
         <label class="checkbox-item">
           <input type="checkbox" id="ig-toggleComments" checked>
-          评论数
+          評論數
         </label>
         <label class="checkbox-item">
           <input type="checkbox" id="ig-toggleSaves" checked>
-          收藏数
+          收藏數
         </label>
         <label class="checkbox-item">
           <input type="checkbox" id="ig-toggleShares" checked>
-          分享数
+          分享數
         </label>
       </div>
     </div>
@@ -324,18 +433,13 @@
       <div class="section-title">Last N Reels</div>
       <div class="number-input">
         <input type="number" id="ig-lastN" min="1" max="20" value="5">
-        <label>个Reels</label>
+        <label>個Reels</label>
       </div>
     </div>
   </div>
   
-  <button class="refresh-btn" id="refreshBtn">刷新数据</button>
+  <button class="refresh-btn" id="refreshBtn">刷新數據</button>
   <div class="status" id="status"></div>
-  
-  <div class="data-display" id="dataDisplay" style="display: none;">
-    <div class="data-title">当前页面数据</div>
-    <div class="data-content" id="dataContent"></div>
-  </div>
   
   <script src="popup.js"></script>
 </body>
