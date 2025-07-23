@@ -1,114 +1,342 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>TikTok Data Copier</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+  <meta charset="utf-8">
   <style>
     body {
-      width: 340px;
+      width: 320px;
+      padding: 16px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+    
+    .header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #e1e5e9;
+    }
+    
+    .logo {
+      width: 24px;
+      height: 24px;
+      margin-right: 8px;
+    }
+    
+    .title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #24292f;
       margin: 0;
-      padding: 20px 40px;
-      background: #EFEEF5;
-      border-radius: 16px;
-      font-family: 'Roboto', sans-serif;
-      color: #000;
     }
-    h1.big-title {
-      font-size: 20px;
+    
+    .platform-selector {
+      margin-bottom: 16px;
+    }
+    
+    .platform-tabs {
+      display: flex;
+      border: 1px solid #d0d7de;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    
+    .platform-tab {
+      flex: 1;
+      padding: 8px 12px;
+      background: #f6f8fa;
+      border: none;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      color: #656d76;
+      transition: all 0.2s;
+    }
+    
+    .platform-tab.active {
+      background: #0969da;
+      color: white;
+    }
+    
+    .platform-tab:hover:not(.active) {
+      background: #f3f4f6;
+    }
+    
+    .platform-content {
+      display: none;
+    }
+    
+    .platform-content.active {
+      display: block;
+    }
+    
+    .section {
+      margin-bottom: 16px;
+    }
+    
+    .section-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #24292f;
+      margin-bottom: 8px;
+    }
+    
+    .checkbox-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+      font-size: 12px;
+      color: #656d76;
+    }
+    
+    .checkbox-item input[type="checkbox"] {
+      margin-right: 6px;
+      width: 14px;
+      height: 14px;
+    }
+    
+    .number-input {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .number-input input {
+      width: 60px;
+      padding: 4px 8px;
+      border: 1px solid #d0d7de;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+    
+    .number-input label {
+      font-size: 12px;
+      color: #656d76;
+    }
+    
+    .data-display {
+      margin-top: 16px;
+      padding: 12px;
+      background: #f6f8fa;
+      border-radius: 6px;
+      border: 1px solid #d0d7de;
+    }
+    
+    .data-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #24292f;
+      margin-bottom: 8px;
+    }
+    
+    .data-content {
+      font-size: 12px;
+      color: #656d76;
+      white-space: pre-wrap;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    
+    .refresh-btn {
+      width: 100%;
+      padding: 8px 16px;
+      background: #0969da;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    
+    .refresh-btn:hover {
+      background: #0858b9;
+    }
+    
+    .refresh-btn:disabled {
+      background: #d0d7de;
+      cursor: not-allowed;
+    }
+    
+    .status {
+      margin-top: 8px;
+      font-size: 12px;
+      color: #656d76;
       text-align: center;
-      margin: 0 0 8px;
     }
-    h2 { font-size: 16px; margin: 0 0 4px; }
-    body, td, th, .setting-item span, .setting-item input[type="number"],
-    #module1 .author, #module1 .version, .small-text { font-size: 12px; }
-    .small-text, .footnote, #module4 .contact { font-size: 10px; color: #333; }
-    .module { padding: 8px 0; }
-    .divider { height: 1px; background: #ccc; margin: 8px 0; }
-    table { width: 100%; border-collapse: collapse; margin-top: 4px; }
-    th { border: 1px solid #000; padding: 4px; text-align: left; padding-left: 16px; }
-    #module2 td { border: 1px solid #000; padding: 4px; text-align: center; }
-    .setting-item {
-      display: flex; justify-content: space-between; align-items: center;
-      margin: 6px 0;
-    }
-    .switch { position: relative; display: inline-block; width: 36px; height: 18px; }
-    .switch input { opacity: 0; width: 0; height: 0; }
-    .slider {
-      position: absolute; cursor: pointer;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: #ccc; transition: .3s; border-radius: 18px;
-    }
-    .slider:before {
-      content: ""; position: absolute;
-      height: 14px; width: 14px;
-      left: 2px; bottom: 2px;
-      transition: .3s; border-radius: 50%; background: #fff;
-    }
-    input:checked + .slider { background: #2196F3; }
-    input:checked + .slider:before { transform: translateX(18px); }
-    input[type="number"] { width: 60px; padding: 2px; }
   </style>
 </head>
 <body>
-  <h1 class="big-title">Tiktok 你跑不掉</h1>
-
-  <!-- 功能說明 -->
-  <div class="module" id="module1">
-    <h2>社群數據抓手</h2>
-    <div class="author">Author：Jamie</div>
-    <div class="version">Version：1.3</div>
-    <div class="small-text">
-      更新內容：<br>
-      • 2025-07-06: 新增 Last Videos 開關<br>
-      • 2025-07-06: 新增 Views/Likes/Comments/Saves/Shares 功能<br>
-      • 2025-07-06: 擴增支持 Video Page
+  <div class="header">
+    <img src="logo.png" class="logo" alt="Logo">
+    <h1 class="title">Social Media Data Copier</h1>
+  </div>
+  
+  <div class="platform-selector">
+    <div class="platform-tabs">
+      <button class="platform-tab active" data-platform="tiktok">TikTok</button>
+      <button class="platform-tab" data-platform="instagram">Instagram</button>
     </div>
   </div>
-  <div class="divider"></div>
-
-  <!-- View Stats Data -->
-  <div class="module" id="module2">
-    <h2>View Stats Data</h2>
-    <table>
-      <tr><th>Pin Video Avg：</th><td id="stat-pinnedAvg">-</td></tr>
-      <tr><th>Last Videos Avg：</th><td id="stat-lastAvg">-</td></tr>
-      <tr><th>觀看滲透率：</th><td id="stat-penetration">-</td></tr>
-    </table>
-    <div class="footnote"><br>
-      **Pin Video Avg: 釘選視頻的平均觀看<br>
-      **Last Videos Avg: 最近幾則視頻（去除釘選）的平均觀看<br>
-      **滲透率: 最近幾則的平均觀看 / 追蹤人數
+  
+  <!-- TikTok Content -->
+  <div class="platform-content active" id="tiktok-content">
+    <div class="section">
+      <div class="section-title">Profile页面数据</div>
+      <div class="checkbox-group">
+        <label class="checkbox-item">
+          <input type="checkbox" id="toggleUsername" checked>
+          用户名
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" id="toggleFollowers" checked>
+          粉丝数
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" id="toggleBio" checked>
+          个人简介
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" id="toggleEmail" checked>
+          邮箱
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" id="togglePinned" checked>
+          置顶平均观看
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" id="toggleLastVideos" checked>
+          最近平均观看
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" id="togglePenetration" checked>
+          渗透率
+        </label>
+      </div>
+    </div>
+    
+    <div class="section">
+      <div class="section-title">Video页面数据</div>
+      <div class="checkbox-group">
+        <label class="checkbox-item">
+          <input type="checkbox" id="toggleViews" checked>
+          观看数
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" id="toggleLikes" checked>
+          点赞数
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" id="toggleComments" checked>
+          评论数
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" id="toggleSaves" checked>
+          收藏数
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" id="toggleShares" checked>
+          分享数
+        </label>
+      </div>
+    </div>
+    
+    <div class="section">
+      <div class="section-title">Last N Videos</div>
+      <div class="number-input">
+        <input type="number" id="lastN" min="1" max="20" value="5">
+        <label>个视频</label>
+      </div>
     </div>
   </div>
-  <div class="divider"></div>
-
-  <!-- Setting -->
-  <div class="module" id="module3">
-    <h2>Setting</h2>
-    <h3 style="font-size:14px; margin:8px 0 4px;">- Profile Page</h3>
-    <div class="setting-item"><span>User Name</span><label class="switch"><input type="checkbox" id="toggle-username"><span class="slider"></span></label></div>
-    <div class="setting-item"><span>Followers</span><label class="switch"><input type="checkbox" id="toggle-followers"><span class="slider"></span></label></div>
-    <div class="setting-item"><span>Bio</span><label class="switch"><input type="checkbox" id="toggle-bio"><span class="slider"></span></label></div>
-    <div class="setting-item"><span>Email</span><label class="switch"><input type="checkbox" id="toggle-email"><span class="slider"></span></label></div>
-    <div class="setting-item"><span>Pinned Avg</span><label class="switch"><input type="checkbox" id="toggle-pinned"><span class="slider"></span></label></div>
-    <div class="setting-item"><span>Last Videos</span><label class="switch"><input type="checkbox" id="toggle-lastVideos"><span class="slider"></span></label></div>
-    <div class="setting-item"><span>Last N Videos</span><input type="number" id="input-lastN" min="1" placeholder="5"></div>
-    <div class="setting-item"><span>滲透率</span><label class="switch"><input type="checkbox" id="toggle-penetration"><span class="slider"></span></label></div>
-    <div style="height:12px;"></div>
-    <h3 style="font-size:14px; margin:8px 0 4px;">- Video Page</h3>
-    <div class="setting-item"><span>Views</span><label class="switch"><input type="checkbox" id="toggle-views"><span class="slider"></span></label></div>
-    <div class="setting-item"><span>Likes</span><label class="switch"><input type="checkbox" id="toggle-likes"><span class="slider"></span></label></div>
-    <div class="setting-item"><span>Comments</span><label class="switch"><input type="checkbox" id="toggle-comments"><span class="slider"></span></label></div>
-    <div class="setting-item"><span>Saves</span><label class="switch"><input type="checkbox" id="toggle-saves"><span class="slider"></span></label></div>
-    <div class="setting-item"><span>Shares</span><label class="switch"><input type="checkbox" id="toggle-shares"><span class="slider"></span></label></div>
+  
+  <!-- Instagram Content -->
+  <div class="platform-content" id="instagram-content">
+    <div class="section">
+      <div class="section-title">Profile页面数据</div>
+      <div class="checkbox-group">
+        <label class="checkbox-item">
+          <input type="checkbox" id="ig-toggleUsername" checked>
+          用户名
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" id="ig-toggleFollowers" checked>
+          粉丝数
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" id="ig-toggleBio" checked>
+          个人简介
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" id="ig-toggleEmail" checked>
+          邮箱
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" id="ig-togglePinned" checked>
+          置顶平均观看
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" id="ig-toggleLastVideos" checked>
+          最近平均观看
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" id="ig-togglePenetration" checked>
+          渗透率
+        </label>
+      </div>
+    </div>
+    
+    <div class="section">
+      <div class="section-title">Reel页面数据</div>
+      <div class="checkbox-group">
+        <label class="checkbox-item">
+          <input type="checkbox" id="ig-toggleViews" checked>
+          观看数
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" id="ig-toggleLikes" checked>
+          点赞数
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" id="ig-toggleComments" checked>
+          评论数
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" id="ig-toggleSaves" checked>
+          收藏数
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" id="ig-toggleShares" checked>
+          分享数
+        </label>
+      </div>
+    </div>
+    
+    <div class="section">
+      <div class="section-title">Last N Reels</div>
+      <div class="number-input">
+        <input type="number" id="ig-lastN" min="1" max="20" value="5">
+        <label>个Reels</label>
+      </div>
+    </div>
   </div>
-  <div class="divider"></div>
-
-  <div class="module" id="module4">
-    <div class="contact small-text">需求更新与维护请联系：LINE@jamie</div>
+  
+  <button class="refresh-btn" id="refreshBtn">刷新数据</button>
+  <div class="status" id="status"></div>
+  
+  <div class="data-display" id="dataDisplay" style="display: none;">
+    <div class="data-title">当前页面数据</div>
+    <div class="data-content" id="dataContent"></div>
   </div>
-
+  
   <script src="popup.js"></script>
 </body>
 </html>

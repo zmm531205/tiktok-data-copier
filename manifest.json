@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "TikTok Data Copier",
-  "version": "1.3",
-  "description": "在 TikTok 页面插入浮窗，复制指定数据到剪贴板，并在扩展弹出页支持配置。",
+  "name": "Social Media Data Copier",
+  "version": "1.4",
+  "description": "在 TikTok 和 Instagram 页面插入浮窗，复制指定数据到剪贴板，并在扩展弹出页支持配置。",
   "icons": {
     "16": "logo.png",
     "32": "logo.png",
@@ -17,7 +17,7 @@
       "48": "logo.png",
       "128": "logo.png"
     },
-    "default_title": "TikTok Data Copier"
+    "default_title": "Social Media Data Copier"
   },
   "permissions": [
     "activeTab",
@@ -25,19 +25,26 @@
     "storage"
   ],
   "host_permissions": [
-    "https://www.tiktok.com/*"
+    "https://www.tiktok.com/*",
+    "https://www.instagram.com/*",
+    "https://i.instagram.com/*"
   ],
   "content_scripts": [
     {
       "matches": ["https://www.tiktok.com/*"],
       "js": ["content_script.js"],
       "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://www.instagram.com/*"],
+      "js": ["instagram_script.js"],
+      "run_at": "document_idle"
     }
   ],
   "web_accessible_resources": [
     {
       "resources": ["button.png","logo.png"],
-      "matches": ["https://www.tiktok.com/*"]
+      "matches": ["https://www.tiktok.com/*", "https://www.instagram.com/*"]
     }
   ]
 }
