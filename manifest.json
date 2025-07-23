@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Social Media Data Copier",
-  "version": "1.4",
+  "version": "2.1",
   "description": "在 TikTok 和 Instagram 页面插入浮窗，复制指定数据到剪贴板，并在扩展弹出页支持配置。",
   "icons": {
     "16": "logo.png",
