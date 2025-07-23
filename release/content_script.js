@@ -14,18 +14,6 @@
     return Math.round(num * m);
   }
 
-  // 千分位格式化函数
-  function formatNumber(num) {
-    if (num === null || num === undefined || num === '-') return '-';
-    if (typeof num === 'string') {
-      // 如果是字符串，尝试转换为数字
-      const parsed = parseFloat(num.replace(/,/g, ''));
-      if (isNaN(parsed)) return num;
-      return parsed.toLocaleString();
-    }
-    return num.toLocaleString();
-  }
-
   // 判断当前是 直连 还是 播放器 浮层
   function detectVideoMode() {
     const path = location.pathname;
@@ -276,22 +264,22 @@
         // Profile 字段
         if (!isVideo) {
           if (prefs.toggleUsername)   row.push(data.userId);
-          if (prefs.toggleFollowers)  row.push(formatNumber(data.followers));
+          if (prefs.toggleFollowers)  row.push(data.followers);
           if (prefs.toggleBio)        row.push(data.bio);
           if (prefs.toggleEmail)      row.push(data.email);
-          if (prefs.togglePinned)     row.push(formatNumber(data.pinnedAvg));
-          if (prefs.toggleLastVideos) row.push(formatNumber(data.lastAvg));
+          if (prefs.togglePinned)     row.push(data.pinnedAvg ?? '-');
+          if (prefs.toggleLastVideos) row.push(data.lastAvg   ?? '-');
           if (prefs.togglePenetration)row.push(data.penetration);
         }
 
         // Video 字段
         if (isVideo) {
           if (prefs.toggleUsername) row.push(data.userId);
-          if (prefs.toggleViews)    row.push(formatNumber(data.play));
-          if (prefs.toggleLikes)    row.push(formatNumber(data.likes));
-          if (prefs.toggleComments) row.push(formatNumber(data.comments));
-          if (prefs.toggleSaves)    row.push(formatNumber(data.saves));
-          if (prefs.toggleShares)   row.push(formatNumber(data.shares));
+          if (prefs.toggleViews)    row.push(data.play.toLocaleString());
+          if (prefs.toggleLikes)    row.push(data.likes.toLocaleString());
+          if (prefs.toggleComments) row.push(data.comments.toLocaleString());
+          if (prefs.toggleSaves)    row.push(data.saves.toLocaleString());
+          if (prefs.toggleShares)   row.push(data.shares.toLocaleString());
         }
 
         const text = row.filter(v => v != null).join('\t');

@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body {
+      width: 320px;
+      padding: 16px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+    
+    .header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #e1e5e9;
+    }
+    
+    .logo {
+      width: 24px;
+      height: 24px;
+      margin-right: 8px;
+    }
+    
+    .title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #24292f;
+      margin: 0;
+    }
+    
+    .info-section {
+      margin-bottom: 16px;
+      padding: 12px;
+      background: #f6f8fa;
+      border-radius: 6px;
+      border: 1px solid #d0d7de;
+    }
+    
+    .info-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #24292f;
+      margin-bottom: 8px;
+    }
+    
+    .info-content {
+      font-size: 12px;
+      color: #656d76;
+      line-height: 1.5;
+    }
+    
+    .author {
+      font-size: 11px;
+      color: #656d76;
+      margin-bottom: 4px;
+    }
+    
+    .version {
+      font-size: 11px;
+      color: #656d76;
+      margin-bottom: 8px;
+    }
+    
+    .update-notes {
+      font-size: 11px;
+      color: #656d76;
+      margin-bottom: 8px;
+    }
+    
+    .data-explanation {
+      font-size: 11px;
+      color: #656d76;
+    }
+    
+    .platform-selector {
+      margin-bottom: 16px;
+    }
+    
+    .platform-tabs {
+      display: flex;
+      border: 1px solid #d0d7de;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    
+    .platform-tab {
+      flex: 1;
+      padding: 8px 12px;
+      background: #f6f8fa;
+      border: none;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      color: #656d76;
+      transition: all 0.2s;
+    }
+    
+    .platform-tab.active {
+      background: #0969da;
+      color: white;
+    }
+    
+    .platform-tab:hover:not(.active) {
+      background: #f3f4f6;
+    }
+    
+    .platform-content {
+      display: none;
+    }
+    
+    .platform-content.active {
+      display: block;
+    }
+    
+    .section {
+      margin-bottom: 16px;
+    }
+    
+    .section-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #24292f;
+      margin-bottom: 8px;
+    }
+    
+    .checkbox-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+      font-size: 12px;
+      color: #656d76;
+    }
+    
+    .checkbox-item input[type="checkbox"] {
+      margin-right: 6px;
+      width: 14px;
+      height: 14px;
+    }
+    
+    .number-input {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .number-input input {
+      width: 60px;
+      padding: 4px 8px;
+      border: 1px solid #d0d7de;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+    
+    .number-input label {
+      font-size: 12px;
+      color: #656d76;
+    }
+    
+    .data-display {
+      margin-top: 16px;
+      padding: 12px;
+      background: #f6f8fa;
+      border-radius: 6px;
+      border: 1px solid #d0d7de;
+    }
+    
+    .data-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #24292f;
+      margin-bottom: 8px;
+    }
+    
+    .data-content {
+      font-size: 12px;
+      color: #656d76;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      table-layout: fixed;
+    }
+    
+    .data-table th,
+    .data-table td {
+      padding: 6px 8px;
+      border-bottom: 1px solid #e1e5e9;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+    
+    .data-table th {
+      background-color: #f6f8fa;
+      font-weight: 600;
+      color: #24292f;
+      text-align: left;
+      width: 50%;
+    }
+    
+    .data-table td:first-child {
+      text-align: left;
+      width: 50%;
+    }
+    
+    .data-table td:last-child {
+      text-align: right;
+      width: 50%;
+    }
+    
+    .data-table tr:hover {
+      background-color: #f6f8fa;
+    }
+    
+    .refresh-btn {
+      width: 100%;
+      padding: 8px 16px;
+      background: #0969da;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    
+    .refresh-btn:hover {
+      background: #0858b9;
+    }
+    
+    .refresh-btn:disabled {
+      background: #d0d7de;
+      cursor: not-allowed;
+    }
+    
+    .status {
+      margin-top: 8px;
+      font-size: 12px;
+      color: #656d76;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <img src="logo.png" class="logo" alt="Logo">
+    <h1 class="title">社群數據抓手</h1>
+  </div>
+  
+  <div class="info-section">
+    <div class="info-title">基本資訊</div>
+    <div class="author">作者：Jamie</div>
+    <div class="version">版本：2.1</div>
+    <div class="update-notes">
+      更新內容：<br>
+      • 2025-07-23: 重大更新 - 優化數據展示和用戶體驗<br>
+      • 2025-07-23: 新增千分位號格式化，提升數據可讀性<br>
+      • 2025-07-23: 重新設計表格界面，專注關鍵指標展示<br>
+      • 2025-07-23: 新增智能設置記憶功能，個性化體驗<br>
+      • 2025-07-23: 新增自動數據刷新，提升使用效率<br>
+      • 2025-07-23: 全面代碼優化，提升性能和穩定性<br>
+      • 2025-07-22: 新增 Instagram 支援<br>
+      • 2025-07-22: 新增 Profile 頁面數據收集<br>
+      • 2025-07-22: 新增 Reel 頁面數據收集<br>
+      • 2025-07-22: 新增置頂視頻檢測功能<br>
+      • 2025-07-22: 新增平台切換介面
+    </div>
+  </div>
+  
+  <div class="info-section">
+    <div class="info-title">數據說明</div>
+    <div class="data-display" id="dataDisplay" style="display: none;">
+      <table class="data-table" id="dataTable">
+        <tbody id="dataTableBody">
+        </tbody>
+      </table>
+      <div class="data-explanation" style="margin-top: 12px;">
+        <strong>置頂平均觀看:</strong> 釘選視頻的平均觀看<br>
+        <strong>最近平均觀看:</strong> 最近幾則視頻（去除釘選）的平均觀看<br>
+        <strong>滲透率:</strong> 最近幾則的平均觀看 / 追蹤人數
+      </div>
+    </div>
+  </div>
+  
+  <div class="platform-selector">
+    <div class="platform-tabs">
+      <button class="platform-tab active" data-platform="tiktok">TikTok</button>
+      <button class="platform-tab" data-platform="instagram">Instagram</button>
+    </div>
+  </div>
+  
+  <!-- TikTok Content -->
+  <div class="platform-content active" id="tiktok-content">
+    <div class="section">
+      <div class="section-title">Profile頁面數據</div>
+      <div class="checkbox-group">
+        <label class="checkbox-item">
+          <input type="checkbox" id="toggleUsername" checked>
+          用戶名
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" id="toggleFollowers" checked>
+          粉絲數
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" id="toggleBio" checked>
+          個人簡介
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" id="toggleEmail" checked>
+          郵箱
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" id="togglePinned" checked>
+          置頂平均觀看
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" id="toggleLastVideos" checked>
+          最近平均觀看
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" id="togglePenetration" checked>
+          滲透率
+        </label>
+      </div>
+    </div>
+    
+    <div class="section">
+      <div class="section-title">Video頁面數據</div>
+      <div class="checkbox-group">
+        <label class="checkbox-item">
+          <input type="checkbox" id="toggleViews" checked>
+          觀看數
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" id="toggleLikes" checked>
+          點讚數
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" id="toggleComments" checked>
+          評論數
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" id="toggleSaves" checked>
+          收藏數
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" id="toggleShares" checked>
+          分享數
+        </label>
+      </div>
+    </div>
+    
+    <div class="section">
+      <div class="section-title">Last N Videos</div>
+      <div class="number-input">
+        <input type="number" id="lastN" min="1" max="20" value="5">
+        <label>個視頻</label>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Instagram Content -->
+  <div class="platform-content" id="instagram-content">
+    <div class="section">
+      <div class="section-title">Profile頁面數據</div>
+      <div class="checkbox-group">
+        <label class="checkbox-item">
+          <input type="checkbox" id="ig-toggleUsername" checked>
+          用戶名
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" id="ig-toggleFollowers" checked>
+          粉絲數
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" id="ig-toggleBio" checked>
+          個人簡介
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" id="ig-toggleEmail" checked>
+          郵箱
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" id="ig-togglePinned" checked>
+          置頂平均觀看
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" id="ig-toggleLastVideos" checked>
+          最近平均觀看
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" id="ig-togglePenetration" checked>
+          滲透率
+        </label>
+      </div>
+    </div>
+    
+    <div class="section">
+      <div class="section-title">Reel頁面數據</div>
+      <div class="checkbox-group">
+        <label class="checkbox-item">
+          <input type="checkbox" id="ig-toggleViews" checked>
+          觀看數
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" id="ig-toggleLikes" checked>
+          點讚數
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" id="ig-toggleComments" checked>
+          評論數
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" id="ig-toggleSaves" checked>
+          收藏數
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" id="ig-toggleShares" checked>
+          分享數
+        </label>
+      </div>
+    </div>
+    
+    <div class="section">
+      <div class="section-title">Last N Reels</div>
+      <div class="number-input">
+        <input type="number" id="ig-lastN" min="1" max="20" value="5">
+        <label>個Reels</label>
+      </div>
+    </div>
+  </div>
+  
+  <button class="refresh-btn" id="refreshBtn">刷新數據</button>
+  <div class="status" id="status"></div>
+  
+  <script src="popup.js"></script>
+</body>
+</html>
