@@ -266,7 +266,27 @@
         'toggleViews','toggleLikes','toggleComments','toggleSaves','toggleShares',
         'lastN'
       ], prefs => {
-        const data = collectData(prefs.lastN || 5);
+        // 提供默认值，确保初次安装时也能正常工作
+        const defaultPrefs = {
+          toggleUsername: true,
+          toggleFollowers: true,
+          toggleBio: true,
+          toggleEmail: true,
+          togglePinned: true,
+          toggleLastVideos: true,
+          togglePenetration: true,
+          toggleViews: true,
+          toggleLikes: true,
+          toggleComments: true,
+          toggleSaves: true,
+          toggleShares: true,
+          lastN: 5
+        };
+        
+        // 合并默认值和用户设置
+        const finalPrefs = { ...defaultPrefs, ...prefs };
+        
+        const data = collectData(finalPrefs.lastN || 5);
         const isVideo = data.hasOwnProperty('play');
         const row = [];
 
@@ -275,23 +295,23 @@
 
         // Profile 字段
         if (!isVideo) {
-          if (prefs.toggleUsername)   row.push(data.userId);
-          if (prefs.toggleFollowers)  row.push(formatNumber(data.followers));
-          if (prefs.toggleBio)        row.push(data.bio);
-          if (prefs.toggleEmail)      row.push(data.email);
-          if (prefs.togglePinned)     row.push(formatNumber(data.pinnedAvg));
-          if (prefs.toggleLastVideos) row.push(formatNumber(data.lastAvg));
-          if (prefs.togglePenetration)row.push(data.penetration);
+          if (finalPrefs.toggleUsername)   row.push(data.userId);
+          if (finalPrefs.toggleFollowers)  row.push(formatNumber(data.followers));
+          if (finalPrefs.toggleBio)        row.push(data.bio);
+          if (finalPrefs.toggleEmail)      row.push(data.email);
+          if (finalPrefs.togglePinned)     row.push(formatNumber(data.pinnedAvg));
+          if (finalPrefs.toggleLastVideos) row.push(formatNumber(data.lastAvg));
+          if (finalPrefs.togglePenetration)row.push(data.penetration);
         }
 
         // Video 字段
         if (isVideo) {
-          if (prefs.toggleUsername) row.push(data.userId);
-          if (prefs.toggleViews)    row.push(formatNumber(data.play));
-          if (prefs.toggleLikes)    row.push(formatNumber(data.likes));
-          if (prefs.toggleComments) row.push(formatNumber(data.comments));
-          if (prefs.toggleSaves)    row.push(formatNumber(data.saves));
-          if (prefs.toggleShares)   row.push(formatNumber(data.shares));
+          if (finalPrefs.toggleUsername) row.push(data.userId);
+          if (finalPrefs.toggleViews)    row.push(formatNumber(data.play));
+          if (finalPrefs.toggleLikes)    row.push(formatNumber(data.likes));
+          if (finalPrefs.toggleComments) row.push(formatNumber(data.comments));
+          if (finalPrefs.toggleSaves)    row.push(formatNumber(data.saves));
+          if (finalPrefs.toggleShares)   row.push(formatNumber(data.shares));
         }
 
         const text = row.filter(v => v != null).join('\t');
